@@ -11,9 +11,9 @@ console.log("v1");
     var POLL_RATE = 100;
 
     var TILE_TYPES = {
-        WALL : 'wall',
+        WALL : 1,
         PLAYER : 'player',
-        FLOOR : 'floor',
+        FLOOR : 0,
     }
     
     var KEYPRESS_INTERVAL = 100;
@@ -59,18 +59,19 @@ console.log("v1");
     }
 
     function getMapFromServerAndRender() {
-        $.post({
+        $.get({
             url: SERVER_URL + '/command',
             data: {command: 'scan', name: PLAYER_NAME},
             dataType: 'JSON'})
         .done(function(result) {
-            var map = result.data;
+            var map = result.Area;
         
             var canvasWidth = map[0].length * TILE_SIZE;
             var canvasHeight = map.length * TILE_SIZE;
 
             resizeCanvas(canvasWidth, canvasHeight);
             drawMap(map);
+            drawEntities(result.entities);
         }).fail(function(res) { console.log(res); });
     }
 
@@ -85,20 +86,23 @@ console.log("v1");
     function drawMap(map) {
         map.forEach(function(row, i) {
             row.forEach(function(tile, j) {
-                switch(tile.type) {
+                switch(tile) {
                     case TILE_TYPES.WALL:
                         drawSquare(j, i, 'black');
-                        break;
-                    case TILE_TYPES.PLAYER:
-                        drawSquare(j, i, stringToColor(tile.name));
                         break;
                     case TILE_TYPES.FLOOR:
                         break;
                     default:
-                        console.warn("Undefined type!!", tile.type, type);
+                        console.warn("Undefined type!!", tile);
                         break;
                 }
             });
+        });
+    }
+
+    function drawEntities(entities) {
+        entities.forEach(function(entity) {
+            drawSquare(entity.x, entity.y, stringToColor(entity.name));
         });
     }
 
@@ -197,7 +201,7 @@ console.log("v1");
 
             unsetAllKeysPressed();
 
-            $.post({
+            $.get({
                 url: SERVER_URL + '/command',
                 data: command,
                 dataType: 'JSON'})
@@ -213,7 +217,7 @@ console.log("v1");
     }
 
     function createPlayer(username) {
-        $.post({
+        $.get({
             url: SERVER_URL + '/command',
             data: {command: 'create', name: username},
             dataType: 'JSON'})
