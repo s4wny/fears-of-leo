@@ -3,8 +3,8 @@ var bodyparser = require('body-parser');
 var Dungeon = require('dungeon-generator')
 
 var dungeon = genereateDungeon();
-var WIDTH = dungeon.size[0];
-var HEIGHT = dungeon.size[1];
+var DUNGEON_WIDTH = dungeon.size[0];
+var DUNGEON_HEIGHT = dungeon.size[1];
 var map = parseDungeonDataIntoArray();
 
 console.log(map);
@@ -128,9 +128,9 @@ function genereateDungeon() {
 function parseDungeonDataIntoArray() {
     var map = [];
 
-    for(var y = 0; y < HEIGHT; y++) {
+    for(var y = 0; y < DUNGEON_HEIGHT; y++) {
         map.push([]);
-        for(var x = 0; x < WIDTH; x++) {
+        for(var x = 0; x < DUNGEON_WIDTH; x++) {
             map[y].push(dungeon.walls.get([x,y]) ? 1 : 0);
         }
     }
@@ -143,8 +143,8 @@ function parseDungeonDataIntoArray() {
 function get_rand_pos(){
     console.log("map2", map);
     while(true) {
-        var x = Math.floor(Math.random()*WIDTH);
-        var y = Math.floor(Math.random()*HEIGHT);
+        var x = Math.floor(Math.random()*DUNGEON_WIDTH);
+        var y = Math.floor(Math.random()*DUNGEON_HEIGHT);
         if( !map[y][x] ) {
             return {x:x, y:y};
         }
