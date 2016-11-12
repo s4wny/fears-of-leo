@@ -66,6 +66,9 @@ console.log("v1");
 		canvas.height = height;
 	}
 
+	/**
+	 * Graphics related function
+	 */
 	function drawMap(map) {
 		map.Area.forEach(function(row, i) {
 			row.forEach(function(type, j) {
@@ -95,14 +98,31 @@ console.log("v1");
 		ctx.fillRect(x, y, w, h);
 	}
 	
-	function intToColor(input) {
+	function intToColor(input){
 		var ret = "rgb(";
-		ret += parseInt(input%256) + ',';
+		ret += input%256 + ',';
 		input = Math.floor(input/256);
-		ret += parseInt(input%256) + ',';
+		ret += input%256 + ',';
 		input = Math.floor(input/256);
-		ret += parseInt(input%256) + ')';
+		ret += input%256 + ')';
 		return ret;
+	}
+
+	function stringToColor(input) {
+
+ 		var hash = 0;
+
+  		if (input.length == 0) return hash;
+  		for (i = 0; i < input.length; i++) {
+    			char = input.charCodeAt(i);
+   	 		hash = ((hash<<5)-hash)+char;
+    			hash = hash & hash; // Convert to 32bit integer
+  		}
+  		if(hash < 0) {
+    			hash *= -1;
+  		}
+
+  		return intToColor(hash);
 	}
 
 
