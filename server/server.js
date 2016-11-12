@@ -73,7 +73,7 @@ app.listen(8080, function() {
 });
 
 function remove_inactive_players(){
-    setIntervall(function(){
+    setInterval(function(){
         for(var name in players) {
             if ((get_current_time() - players[name].last_time_scan) > 10000) {
                 delete players[name];
