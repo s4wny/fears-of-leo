@@ -25,7 +25,7 @@ app.use(bodyparser.urlencoded({
     extended: true
 }));
 
-app.post('/command', function(req, res){
+app.get('/command', function(req, res){
     res = addCrosHeaders(res);
 
     var command = req.body.command;
@@ -56,9 +56,9 @@ app.post('/command', function(req, res){
 
             player = players[name];
 
-            mapAroundPlayer = getSquaresAroundPlayer(player);
+            Area = getSquaresAroundPlayer(player);
             players[name].last_time_scan = get_current_time();
-            res.end(JSON.stringify({"success": true, "data": mapAroundPlayer, "message": ""}));
+            res.end(JSON.stringify({"success": true, "data": Area, "message": ""}));
             break;
 
         default:
@@ -79,7 +79,7 @@ function remove_inactive_players(){
                 delete players[name];
             }
         }
-    },SPEED_LIMIT);
+    }, SPEED_LIMIT);
 }
 
 function move_player(name, dx, dy) {
@@ -119,41 +119,30 @@ function move_player(name, dx, dy) {
  * 7x7 map around player
  */
 function getSquaresAroundPlayer(player) {
-    var mapAroundPlayer = [];
+    var Area = [];
     for (var y = -3; y <= 3; y++) {
-        mapAroundPlayer.push([]);
+        Area.push([]);
 
         for (var x = -3; x <= 3; x++) {
-            var other_player_name = undefined;
             
-            // Other player around you
-            for(var name in players) {
-                other_player = players[name];
-                if(other_player.pos.x === player.pos.x+x && other_player.pos.y === player.pos.y + y) {
-                    other_player_name = name;
-                    break;
-                }
-            }
-
-            if (typeof other_player_name !== "undefined") {
-                mapAroundPlayer[y+3].push({type:"player", name: other_player_name});
+            if(typeof map[y+player.pos.y] === "undefined" || typeof map[y+player.pos.y][x+player.pos.x] === "undefined") {
+                Area[y+3].push(1);
             } else {
-                if(typeof map[y+player.pos.y] === "undefined" || typeof map[y+player.pos.y][x+player.pos.x] === "undefined") {
-                    mapAroundPlayer[y+3].push({
-                        type: "wall",
-                        name: ""
-                    });
-                } else {
-                    var type = map[y+player.pos.y][x+player.pos.x] ? "wall" : "floor";
-                    mapAroundPlayer[y+3].push({
-                        type: type,
-                        name:""
-                    });
-                }
+                var is_wall = map[y+player.pos.y][x+player.pos.x] ? 1 : 0;
+                Area[y+3].push(is_wall);
             }
         }
     }
-    return mapAroundPlayer;
+    var entities = []
+    // Other player around you
+    for(var name in players) {
+        other_player = players[name];
+        if(Math.abs(other_player.pos.x - player.pos.x) <= 3 && Math.abs(other_player.pos.y - player.pos.y) <= 3) {
+            entities.push({"name":players[name], "x":other_player.pos.x, "y":other_player.pos.y});
+        }
+    }
+
+    return {Area:Area, entities:entities};
 }
 
 function genereateDungeon() {
