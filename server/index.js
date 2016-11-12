@@ -1,5 +1,6 @@
-const http = require('http');
-const Dungeon = require('dungeon-generator')
+var express = require('express');
+var bp = require('body-parser');
+var Dungeon = require('dungeon-generator')
 
 var dungeon = new Dungeon({
     size: [100, 100], 
@@ -21,24 +22,97 @@ var dungeon = new Dungeon({
 });
 
 dungeon.generate();
-dungeon.print()
+dungeon.print();
+console.log(dungeon.size);
 
-http.createServer(function (req, res) {
+var width = dungeon.size[0];
+var height = dungeon.size[1];
+
+var map = []
+for(var y = 0; y < height; y++) {
+    map.push([]);
+    for(var x = 0; x < width; x++) {
+        map[y].push(dungeon.walls.get([x,y])?1:0)
+    }
+}
+
+console.log(map);
+
+
+/*
+ * {
+ * pos:{x:0, y:0},
+ * last_time_move:0
+ * }
+ */
+
+var players = {};
+
+function get_rand_pos(){
+    while(true) {
+        var x = Math.floor(Math.random()*width);
+        var y = Math.floor(Math.random()*height);
+        if( !map[y][x] ) {
+            return {x:x, y:y};
+        }
+    }
+}
+
+function get_current_time() { // Returns millisec
+    if (!Date.now) {
+        Date.now = function() { return new Date().getTime(); }
+    }
+    Date.now()
+}
+
+var app = express();
+app.use(bp.json());
+app.post('/command', function(req, res){
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Credentials', true); 
 
-    let data = {Area:[]}
+    var command = req.body.command;
+    var name = req.body.name;
 
-    for(y = 0; y < dungeon.size[0]; y++) {
-        data.Area.push([]);
-        for(x = 0; x < dungeon.size[1]; x++) {
-            data.Area[y].push(dungeon.walls.get([x,y])?1:0)
-        }
+    switch(command) {
+        case 'create':
+            if ( name in players ) {
+                res.end(JSON.stringify({"success": false, "message": "Username already in use"}));
+                return
+            }
+            player[name] = {pos:get_rand_pos(), last_time_move: get_current_time()}
+            res.end(JSON.stringify({"success": true, "message": ""}));
+            break;
+
+        case 'move':
+            var dx = req.body.dx;
+            var dy = req.body.dy;
+            if ( !(name in players) ) {
+                res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
+                return
+            }
+            if ( !([-1, 0, 1].indexOf(dx) || [-1,0,1].indexOf(dy)) ) {
+                res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
+                return
+            }
+            if ( (get_current_time() - player.last_time_move) < 2000) {
+                res.end(JSON.stringify({"success": false, "message": "You need to wait a it longer to move again"}));
+            }
+            if ( map[player.pos.x+dx][player.pos.y+dy] == 1 ) {
+                res.end(JSON.stringify({"success": false, "message": "You walked into a wall"}));
+            }
+            player.pos.x += dx;
+            player.pos.y += dy;
+            res.end(JSON.stringify({"success": true, "message": ""}));
+            break;
+
+        case 'scan':
+            break;
+
     }
+});
 
-    res.write(JSON.stringify(data))
-    res.end();
-}).listen(8080);
-
+app.listen(8080, function(){});
+/**/
