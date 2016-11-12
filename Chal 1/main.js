@@ -22,7 +22,7 @@ console.log("v1");
     var IP = "127.0.0.1"; // Local
     var SERVER_URL = "http://"+ IP +":"+ PORT;
 
-    var PLAYER_NAME = "SuperUnicorn";
+    var PLAYER_NAME;
 
     var ALLOWED_KEYS = {
         left : 37,
@@ -39,6 +39,8 @@ console.log("v1");
     function main() {
         canvas = document.getElementById("js-game");
         ctx = canvas.getContext("2d");
+
+        PLAYER_NAME = prompt("Enter a unicorn name:");
 
         createPlayer(PLAYER_NAME);
         getMapFromServerAndRender();
