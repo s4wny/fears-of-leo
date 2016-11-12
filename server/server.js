@@ -177,12 +177,12 @@ function getSquaresAroundPlayer(player) {
     for(var name in players) {
         other_player = players[name];
         if(Math.abs(other_player.pos.x - player.pos.x) <= 3 && Math.abs(other_player.pos.y - player.pos.y) <= 3) {
-            entities.push({"name":name, "x":other_player.pos.x, "y":other_player.pos.y});
+            entities.push({"name":name, "type":"player", "x":other_player.pos.x, "y":other_player.pos.y});
         }
     }
 
     for(var i = 0; i < monsters.length; i++){
-        entities.push({"name":"monsterssss", "x":monsters[i].x, "y":monsters[i].y});
+        entities.push({"name":"monsterssss", "type":"monster", "x":monsters[i].x, "y":monsters[i].y});
     }
 
     return {Area:Area, entities:entities};
