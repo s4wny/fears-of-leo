@@ -2,6 +2,8 @@
 
 Javascript and node.js based game.
 
+![Printscreen](/printscreen-1.png)
+
 
 ## Client
 
