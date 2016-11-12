@@ -21,7 +21,7 @@ console.log("Graphics v1");
         ctx = canvas.getContext("2d");
     }
 
-    /** 
+    /**
      * width, height = _number_ of tiles.
      */
     graphics.resizeCanvas = function(width, height) {
@@ -51,8 +51,37 @@ console.log("Graphics v1");
 
                         graphics.drawRoundSquare(j, i, corners, 'black');
                         break;
+
                     case TILE_TYPES.FLOOR:
+                        var isOccupied = [0,0,0,0];
+                        if(i > 0 && !map[i-1][j]) isOccupied[0] = 1;
+                        if(j > 0 && !map[i][j-1]) isOccupied[3] = 1;
+                        if(map.length > i+1 && !map[i+1][j]) isOccupied[2] = 1;
+                        if(map[i].length > j+1 && !map[i][j+1]) isOccupied[1] = 1;
+
+                        if(isOccupied[0] || isOccupied[1]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
+                                                                                (i + 0.2) * TILE_SIZE,
+                                                                                 0.6 * TILE_SIZE,
+                                                                                 0,
+                                                                                 'black');
+                        if(isOccupied[1] || isOccupied[2]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
+                                                                                (i + 0.8) * TILE_SIZE,
+                                                                                 0.6 * TILE_SIZE,
+                                                                                 0,
+                                                                                 'black');
+                        if(isOccupied[2] || isOccupied[3]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
+                                                                                (i + 0.8) * TILE_SIZE,
+                                                                                 0.6 * TILE_SIZE,
+                                                                                 0,
+                                                                                 'black');
+                        if(isOccupied[3] || isOccupied[0]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
+                                                                                (i + 0.2) * TILE_SIZE,
+                                                                                 0.6 * TILE_SIZE,
+                                                                                 0,
+                                                                                 'black');
+
                         break;
+
                     default:
                         console.warn("Undefined type!!", tile);
                         break;
@@ -124,6 +153,7 @@ console.log("Graphics v1");
     	var angle = 0;
 
     	ctx.fillStyle = color;
+
     	ctx.beginPath();
     	ctx.moveTo(r * Math.cos(angle) + x, r * Math.sin(angle) + y);
     	while(angle < 2 * Math.PI){
@@ -131,6 +161,25 @@ console.log("Graphics v1");
     		ctx.lineTo(r * Math.cos(angle) + x, r * Math.sin(angle) + y);
     	}
     	ctx.closePath();
+
+    	ctx.fill();
+    }
+
+    graphics.drawArcQuad(x, y, r, offset, color) {
+
+      var angle = 0;
+
+      ctx.fillStyle = color;
+
+      ctx.beginPath();
+      ctx.moveTo(r * Math.cos(offset + angle) + x, r * Math.sin(offset + angle) + y);
+      while(angle < 0.5 * Math.PI){
+    		angle += 0.5 * Math.PI / 16;
+    		ctx.lineTo(r * Math.cos(offset + angle) + x, r * Math.sin(offset + angle) + y);
+    	}
+      angle = 0.25 * Math.PI;
+      ctx.lineTo(r * 1.4142 * Math.cos(offset + angle) + x, r * 1.4142 * Math.sin(offset + angle) + y);
+      ctx.closePath();
 
     	ctx.fill();
     }
