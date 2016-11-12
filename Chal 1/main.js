@@ -15,7 +15,7 @@ console.log("v1");
         PLAYER : 'player',
         FLOOR : 0,
     }
-    
+
     var KEYPRESS_INTERVAL = 100;
 
     var PORT = 8080;
@@ -65,7 +65,7 @@ console.log("v1");
             dataType: 'JSON'})
         .done(function(result) {
             var map = result.Area;
-        
+
             var canvasWidth = map[0].length * TILE_SIZE;
             var canvasHeight = map.length * TILE_SIZE;
 
@@ -111,7 +111,7 @@ console.log("v1");
         });
 
         entities.forEach(function(entity) {
-            drawSquare(myX - entity.x + 3, myY - entity.y + 3, stringToColor(entity.name));
+            drawSquare(entity.x - myX + 3, entity.y - myY + 3, stringToColor(entity.name));
         });
     }
 
@@ -123,7 +123,7 @@ console.log("v1");
         ctx.fillStyle = color;
         ctx.fillRect(x, y, w, h);
     }
-    
+
     function intToColor(input){
         var ret = "rgb(";
         ret += input%256 + ',';
@@ -238,5 +238,3 @@ console.log("v1");
         });
     }
 })(window);
-
-
