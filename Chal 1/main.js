@@ -93,6 +93,16 @@ console.log("v1");
 		ctx.fillStyle = color;
 		ctx.fillRect(x, y, w, h);
 	}
+	
+	function intToColor(input) {
+		var ret = "rgb(";
+		ret += parseInt(input%256) + ',';
+		input = Math.floor(input/256);
+		ret += parseInt(input%256) + ',';
+		input = Math.floor(input/256);
+		ret += parseInt(input%256) + ')';
+		return ret;
+	}
 
 
 	/**
