@@ -7,7 +7,7 @@ var DUNGEON_WIDTH = dungeon.size[0];
 var DUNGEON_HEIGHT = dungeon.size[1];
 var map = parseDungeonDataIntoArray();
 
-console.log(map);
+var SPEED_LIMIT = 100;
 
 /**
  * Player structure:
@@ -56,7 +56,7 @@ app.post('/command', function(req, res){
                 return
             }
             
-            if ( (get_current_time() - player.last_time_move) < 500) {
+            if ( (get_current_time() - player.last_time_move) < SPEED_LIMIT) {
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
             }
@@ -99,30 +99,41 @@ app.listen(8080, function() {
  * 7x7 map around player
  */
 function getSquaresAroundPlayer(player) {
-    var m = [];
-    for (var i = -3; i <= 3; i++) {
-        m.push([]);
-        for (var j = -3; j <= 3; j++) {
-            var other_player = undefined;
-            for(var n in players) {
-                p = players[n];
-                if(p.pos.x === player.pos.x+j && p.pos.y === player.pos.y + i) {
-                    other_player = name;
+    var mapAroundPlayer = [];
+    for (var y = -3; y <= 3; y++) {
+        mapAroundPlayer.push([]);
+
+        for (var x = -3; x <= 3; x++) {
+            var other_player_name = undefined;
+            
+            // Other player around you
+            for(var name in players) {
+                other_player = players[name];
+                if(other_player.pos.x === player.pos.x+x && other_player.pos.y === player.pos.y + y) {
+                    other_player_name = name;
                     break;
                 }
             }
-            if (other_player !== undefined) {
-                m[i+1].push({type:"player", name:other_player});
+
+            if (typeof other_player_name !== "undefined") {
+                mapAroundPlayer[y+3].push({type:"player", name: other_player_name});
             } else {
-                if(typeof map[i+player.pos.y][j+player.pos.x] === undefined) {
-                    m[i+1].push({type: "wall", name:""});
+                if(typeof map[y+player.pos.y] === "undefined" || typeof map[y+player.pos.y][x+player.pos.x] === "undefined") {
+                    mapAroundPlayer[y+3].push({
+                        type: "wall",
+                        name: ""
+                    });
                 } else {
-                    m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
+                    var type = map[y+player.pos.y][x+player.pos.x] ? "wall" : "floor";
+                    mapAroundPlayer[y+3].push({
+                        type: type,
+                        name:""
+                    });
                 }
             }
         }
     }
-    return m;
+    return mapAroundPlayer;
 }
 
 function genereateDungeon() {
@@ -162,13 +173,10 @@ function parseDungeonDataIntoArray() {
         }
     }
 
-    console.log("parseDungeonDataIntoArray", map);
-
     return map;
 }
 
 function get_rand_pos(){
-    console.log("map2", map);
     while(true) {
         var x = Math.floor(Math.random()*DUNGEON_WIDTH);
         var y = Math.floor(Math.random()*DUNGEON_HEIGHT);

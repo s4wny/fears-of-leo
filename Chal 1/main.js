@@ -7,12 +7,12 @@ console.log("v1");
     var canvas, ctx, keysPressed;
 
     // CONFIG
-    var TILE_SIZE = 150;
+    var TILE_SIZE = 50;
 
     var TILE_TYPES = {
-        WALL : 1,
-        PLAYER : 4,
-        EMPTY : 0,
+        WALL : 'wall',
+        PLAYER : 'player',
+        FLOOR : 'floor',
     }
     
     var KEYPRESS_INTERVAL = 100;
@@ -73,18 +73,18 @@ console.log("v1");
      */
     function drawMap(map) {
         map.forEach(function(row, i) {
-            row.forEach(function(type, j) {
-                switch(type) {
+            row.forEach(function(tile, j) {
+                switch(tile.type) {
                     case TILE_TYPES.WALL:
                         drawSquare(j, i, 'black');
                         break;
                     case TILE_TYPES.PLAYER:
-                        drawSquare(j, i, 'blue');
+                        drawSquare(j, i, "red");
                         break;
-                    case TILE_TYPES.EMPTY:
+                    case TILE_TYPES.FLOOR:
                         break;
                     default:
-                        console.warn("Undefined type!!", type);
+                        console.warn("Undefined type!!", tile.type, type);
                         break;
                 }
             });
