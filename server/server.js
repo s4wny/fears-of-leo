@@ -104,8 +104,9 @@ function getSquaresAroundPlayer(player) {
         for (var j = -3; j <= 3; j++) {
             if(typeof map[i+player.pos.y][j+player.pos.x] !== 'undefined') {
                 mapAroundPlayer[i+1].push(map[i+player.pos.y][j+player.pos.x] ? 1 : 0);
+            } else {
+                mapAroundPlayer[i+1].push(1);
             }
-            mapAroundPlayer[i+1].push(1);
         }
     }
 
