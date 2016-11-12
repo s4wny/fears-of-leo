@@ -1,5 +1,5 @@
 var express = require('express');
-var bp = require('body-parser');
+var bodyparser = require('body-parser');
 var Dungeon = require('dungeon-generator')
 
 var dungeon = new Dungeon({
@@ -63,7 +63,11 @@ function get_current_time() { // Returns millisec
 }
 
 var app = express();
-app.use(bp.json());
+
+app.use(bodyparser.urlencoded({
+  extended: true
+}));
+
 app.post('/command', function(req, res){
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -79,7 +83,7 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "Username already in use"}));
                 return
             }
-            player[name] = {pos:get_rand_pos(), last_time_move: get_current_time()}
+            players[name] = {pos:get_rand_pos(), last_time_move: get_current_time()}
             res.end(JSON.stringify({"success": true, "message": ""}));
             break;
 

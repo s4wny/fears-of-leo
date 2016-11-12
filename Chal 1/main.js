@@ -7,7 +7,7 @@ console.log("v1");
 	var canvas, ctx, keysPressed;
 
 	// CONFIG
-	var TILE_SIZE = 10;
+	var TILE_SIZE = 50;
 
 	var TILE_TYPES = {
 		WALL : 1,
@@ -37,7 +37,6 @@ console.log("v1");
 	});
 
 
-
 	function main() {
 		canvas = document.getElementById("js-game");
 		ctx = canvas.getContext("2d");
@@ -50,11 +49,15 @@ console.log("v1");
 	};
 
 	function getMapFromServerAndRender() {
-		$.post(SERVER_URL + '/command', {command: 'scan', name: PLAYER_NAME}).done(function(map) {
-			console.log("Map", map);
+		$.post({
+			url: SERVER_URL + '/command',
+			data: {command: 'scan', name: PLAYER_NAME},
+			dataType: 'JSON'})
+		.done(function(result) {
+			var map = result.data;
 		
-			var canvasWidth = map.Area[0].length * TILE_SIZE;
-			var canvasHeight = map.Area.length * TILE_SIZE;
+			var canvasWidth = map[0].length * TILE_SIZE;
+			var canvasHeight = map.length * TILE_SIZE;
 
 			resizeCanvas(canvasWidth, canvasHeight);
 			drawMap(map);
@@ -70,7 +73,7 @@ console.log("v1");
 	 * Graphics related function
 	 */
 	function drawMap(map) {
-		map.Area.forEach(function(row, i) {
+		map.forEach(function(row, i) {
 			row.forEach(function(type, j) {
 				switch(type) {
 					case TILE_TYPES.WALL:
@@ -195,9 +198,10 @@ console.log("v1");
 	}
 
 	function createPlayer(username) {
-		var command = {command: 'create', name: username};
-
-		$.post(SERVER_URL +'/command', command)
+		$.post({
+			url: SERVER_URL + '/command',
+			data: {command: 'create', name: username},
+			dataType: 'JSON'})
 		.done(function(res) {
 			console.log(res);
 		})
