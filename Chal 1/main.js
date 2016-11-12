@@ -7,7 +7,7 @@ console.log("v1");
 	var canvas, ctx, keysPressed;
 
 	// CONFIG
-	var TILE_SIZE = 50;
+	var TILE_SIZE = 150;
 
 	var TILE_TYPES = {
 		WALL : 1,
@@ -173,12 +173,12 @@ console.log("v1");
 				return;
 			}
 
-			var command = {command : "move", name: "swag", dx: 1, dy: 1};
+			var command = {command : "move", name: PLAYER_NAME, dx: 1, dy: 1};
 			var dx = 0;
 			var dy = 0;
 
-			dy += (keysPressed[ALLOWED_KEYS.up])    ? 1 : 0;
-			dy += (keysPressed[ALLOWED_KEYS.down])  ? -1 : 0;
+			dy += (keysPressed[ALLOWED_KEYS.up])    ? -1 : 0;
+			dy += (keysPressed[ALLOWED_KEYS.down])  ? 1 : 0;
 			dx += (keysPressed[ALLOWED_KEYS.right]) ? 1 : 0;
 			dx += (keysPressed[ALLOWED_KEYS.left])  ? -1 : 0;
 			command.dx = dx;
@@ -186,9 +186,13 @@ console.log("v1");
 
 			unsetAllKeysPressed();
 
-			$.post(SERVER_URL +'/command', command)
+			$.post({
+				url: SERVER_URL + '/command',
+				data: command,
+				dataType: 'JSON'})
 			.done(function(res) {
 				console.log(res);
+				getMapFromServerAndRender();
 			})
 			.fail(function(res) {
 				console.error(res);

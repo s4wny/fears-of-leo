@@ -88,14 +88,17 @@ app.post('/command', function(req, res){
             break;
 
         case 'move':
-            var dx = req.body.dx;
-            var dy = req.body.dy;
+            var dx = parseInt(req.body.dx);
+            var dy = parseInt(req.body.dy);
+            
             if ( !(name in players) ) {
                 res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
                 return
             }
+
             player = players[name];
-            if ( !([-1, 0, 1].indexOf(dx) || [-1,0,1].indexOf(dy)) ) {
+            
+            if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
                 res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
                 return
             }
@@ -103,7 +106,8 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
             }
-            if ( map[player.pos.x+dx][player.pos.y+dy] == 1 ) {
+
+            if ( map[ parseInt(player.pos.y) + dy][parseInt(player.pos.x) + dx] == 1 ) {
                 res.end(JSON.stringify({"success": false, "message": "You walked into a wall"}));
                 return
             }
