@@ -59,7 +59,7 @@ function get_current_time() { // Returns millisec
     if (!Date.now) {
         Date.now = function() { return new Date().getTime(); }
     }
-    Date.now()
+    return Date.now();
 }
 
 var app = express();
