@@ -18,11 +18,7 @@ console.log("v1");
 
     var KEYPRESS_INTERVAL = 100;
 
-    var PORT = 8080;
-    var IP = "192.168.204.30"; // Filip
-    //var IP = "127.0.0.1"; // Local
-    var SERVER_URL = "http://"+ IP +":"+ PORT;
-
+    var SERVER_URL;
     var PLAYER_NAME;
 
     var ALLOWED_KEYS = {
@@ -41,17 +37,41 @@ console.log("v1");
         canvas = document.getElementById("js-game");
         ctx = canvas.getContext("2d");
 
-        
-        IP = prompt("IP", IP);
-        PLAYER_NAME = prompt("Enter a unicorn name:");
+        addActiveServersToHTMLList();
+        connectToServerOnBtnClick(function() {
+            createPlayer(PLAYER_NAME);
+            getMapFromServerAndRender();
 
-        createPlayer(PLAYER_NAME);
-        getMapFromServerAndRender();
-
-        listenForKeypressed();
-        listenForMovement();
-        automaticallyUpdateMap();
+            listenForKeypressed();
+            listenForMovement();
+            automaticallyUpdateMap();
+        });
     };
+
+    function connectToServerOnBtnClick(cb) {
+        $("#js-connect-to-server").on('click', function() {
+            PLAYER_NAME = prompt("Enter a unicorn name:");
+            SERVER_URL = $("#js-server-list").val();
+
+            cb();
+        });
+    }
+
+    function addActiveServersToHTMLList() {
+        $.getJSON('/ircServers').done(function(ircServers) {
+            var html = "";
+
+            for(var ip in ircServers) {
+                html += "<option value='http://"+ htmlEncode(ip) +"'>"+ htmlEncode(ircServers[ip].name) +" ("+ htmlEncode(ip) +")</option>"
+            }
+
+            console.log(ircServers, html);
+
+            $("#js-server-list").html(html);
+        }).fail(function(res) {
+            console.error(res);
+        });
+    }
 
     function automaticallyUpdateMap() {
         setInterval(function() {
@@ -79,6 +99,10 @@ console.log("v1");
     function resizeCanvas(width, height) {
         canvas.width = width;
         canvas.height = height;
+    }
+
+    function htmlEncode(value){
+        return $('<div/>').text(value).html();
     }
 
     /**
