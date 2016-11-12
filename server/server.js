@@ -1,14 +1,9 @@
-var os = require('os');
 var express = require('express');
 var bodyparser = require('body-parser');
-var Dungeon = require('dungeon-generator')
-var irc = require('irc')
 
-var dungeon = genereateDungeon();
-var DUNGEON_WIDTH = dungeon.size[0];
-var DUNGEON_HEIGHT = dungeon.size[1];
-var map = parseDungeonDataIntoArray();
-var irc_client = createIRC()
+// Advertice server
+var advertice = require('./irc.js');
+var create_dungeon = require('./dungeon.js');
 
 var SPEED_LIMIT = 100;
 
@@ -19,18 +14,16 @@ var SPEED_LIMIT = 100;
  *      last_time_move:0
  *      last_time_scan:0
  * }
- */
-var players = {};
-
-
-/**
+ *
  * Monster structure:
  * {
  *      pos:{x:0, y:0},
  * }
  */
 
+var players = {};
 var monsters = [];
+var dungeon = create_dungeon("abdc");
 
 var app = express();
 
@@ -55,6 +48,10 @@ app.get('/command', function(req, res){
             break;
 
         case 'move':
+            if ( !(name in players) ) {
+                return
+            }
+
             var dx = parseInt(req.query.dx);
             var dy = parseInt(req.query.dy);
             
@@ -63,7 +60,6 @@ app.get('/command', function(req, res){
 
         case 'scan':
             if ( !(name in players) ) {
-                res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
                 return
             }
 
@@ -74,9 +70,6 @@ app.get('/command', function(req, res){
             res.end(JSON.stringify(scan));
             break;
 
-        default:
-            res.end(JSON.stringify({"success": false, "message": "Command not found"}));
-            return
     }
 });
 
@@ -91,42 +84,10 @@ app.listen(8080, function() {
 
 function auto_monster(){
     setInterval(function(){
-
-            console.log("Done")
         for(var i = 0; i < monsters.length; i++) {
-            console.log("Done")
             move_monster(i, Math.floor(Math.random()*3)-1, Math.floor(Math.random()*3)-1);
         }
     }, 1000);
-}
-function advertice(){
-    var ifaces = os.networkInterfaces();
-    var address = "";
-    Object.keys(ifaces).forEach(function (ifname) {
-        var alias = 0;
-
-        ifaces[ifname].forEach(function (iface) {
-            if ('IPv4' !== iface.family || iface.internal !== false) {
-                // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-                return;
-            }
-
-            if (alias >= 1) {
-                // this single interface has multiple ipv4 addresses
-                //console.log(ifname + ':' + alias, iface.address);
-            } else {
-                // this interface has only one ipv4 adress
-                console.log(ifname, iface.address);
-                address = iface.address;
-            }
-            ++alias;
-            return false;
-        });
-    });
-
-    setInterval(function(){
-        irc_client.say("#dungeon", JSON.stringify({"name":"UFU", "address":address+':8080', "info":"Unicorns for unicode"}))
-    }, 5000);
 }
 
 function remove_inactive_players(){
@@ -139,83 +100,57 @@ function remove_inactive_players(){
     }, SPEED_LIMIT);
 }
 
-function move_monster(index, dx, dy) {
-    console.log(index, dx, dy);
+function is_move_allowed(old_pos, dx, dy) {
     if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
-        return {"success": false, "message": "Move not allowed"};
+        return false;
     }
 
-    entity = monsters[index];
-
-    if ( map[ parseInt(entity.y) + dy][parseInt(entity.x) + dx] == 1 ) {
-        return {"success": false, "message": "You walked into a wall"};
+    if ( dungeon.map[old_pos.y + dy][old_pos.x + dx] == 1 ) {
+        return false;
     }
-    
+
     for (var i = 0; i < monsters.length; i++) {
-        if (i == index) {
-            continue;
-        }
-
-        if(monsters[i].x === entity.x + dx && monsters[i].y === entity.y + dy){
-            return {"success": false, "message": "You walked into another player"};
+        if(monsters[i].x === old_pos.x + dx && monsters[i].y === old_pos.y + dy){
+            return false;
         }
     }
-    
+
     for (var p_name in players) {
         other_player = players[p_name];
-        if(other_player.pos.x == entity.x + dx && other_player.pos.y == entity.y + dy) {
-            return {"success": false, "message": "You walked into another player"};
+        if(other_player.pos.x == old_pos.x + dx && other_player.pos.y == old_pos.y + dy) {
+            return false;
         }
     }
 
-    entity.x += dx;
-    entity.y += dy;
-    monsters[index] = entity;
+    return true;
+}
 
-    return {"success": true, "message": ""};
+function move_pos(old_pos, dx, dy) {
+    if(is_move_allowed(old_pos, dx, dy)) {
+        old_pos.x += dx;
+        old_pos.y += dy;
+    }
+    return old_pos;
+}
+function move_monster(index, dx, dy) {
+    monsters[index] = move_pos(monsters[index], dx, dy);
 }
 
 function move_player(name, dx, dy) {
-    if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
-        return {"success": false, "message": "Move not allowed"};
-    }
-
-    if ( !(name in players) ) {
-        return {"success": false, "message": "User does not exist"};
-    }
-
     player = players[name];
-    
-    if ( (get_current_time() - player.last_time_move) < SPEED_LIMIT) {
-        return {"success": false, "message": "You need to wait a bit longer to move again"};
-    }
+   
+    if ((get_current_time() - player.last_time_move) < SPEED_LIMIT) {
+        return;
+    } 
 
-    if ( map[ parseInt(player.pos.y) + dy][parseInt(player.pos.x) + dx] == 1 ) {
-        return {"success": false, "message": "You walked into a wall"};
-    }
-    
-    for (var p_name in players) {
-        other_player = players[p_name];
-        if(other_player.pos.x == player.pos.x + dx && other_player.pos.y == player.pos.y + dy) {
-            return {"success": false, "message": "You walked into another player"};
-        }
-    }
-
-    for (var i = 0; i < monsters.length; i++) {
-        if(monsters[i].x === player.pos.x + dx && monsters[i].y === player.pos.y + dy){
-            return {"success": false, "message": "You walked into another player"};
-        }
-    }
-
+    player.pos = move_pos(player.pos, dx, dy);
     player.last_time_move = get_current_time();
-    player.pos.x += dx;
-    player.pos.y += dy;
-    players[name] = player;
 
-    return {"success": true, "message": ""};
+    players[name] = player;
 }
+
 /** 
- * 7x7 map around player
+ * 7x7 dungeon.map around player
  */
 function getSquaresAroundPlayer(player) {
     var Area = [];
@@ -224,10 +159,10 @@ function getSquaresAroundPlayer(player) {
 
         for (var x = -3; x <= 3; x++) {
             
-            if(typeof map[y+player.pos.y] === "undefined" || typeof map[y+player.pos.y][x+player.pos.x] === "undefined") {
+            if(typeof dungeon.map[y+player.pos.y] === "undefined" || typeof dungeon.map[y+player.pos.y][x+player.pos.x] === "undefined") {
                 Area[y+3].push(1);
             } else {
-                var is_wall = map[y+player.pos.y][x+player.pos.x] ? 1 : 0;
+                var is_wall = dungeon.map[y+player.pos.y][x+player.pos.x] ? 1 : 0;
                 Area[y+3].push(is_wall);
             }
         }
@@ -249,57 +184,11 @@ function getSquaresAroundPlayer(player) {
     return {Area:Area, entities:entities};
 }
 
-function genereateDungeon() {
-    var dungeon = new Dungeon({
-        size: [100, 100], 
-        seed:"abcd",
-        rooms: {
-            any: {
-                min_size: [2, 3],
-                max_size: [5, 6],
-                max_exits: 4
-            }
-        },
-        max_corridor_length: 10,
-        min_corridor_length: 2,
-        corridor_density: 0.5, //corridors per room 
-        symmetric_rooms: false, // exits must be in the center of a wall if true 
-        interconnects: 1, //extra corridors to connect rooms and make circular paths. not 100% guaranteed 
-        max_interconnect_length: 10,
-        room_count: Math.floor(Math.random()*10)+4
-    });
-
-    dungeon.generate();
-    dungeon.print();
-    console.log("Dungeon size:", dungeon.size);
-
-    return dungeon;
-}
-
-function createIRC(){
-    return new irc.Client('irc.leovegas.com', 'Unicorns', {
-        channels: ['#dungeon'],
-    }); 
-}
-
-function parseDungeonDataIntoArray() {
-    var map = [];
-
-    for(var y = 0; y < DUNGEON_HEIGHT; y++) {
-        map.push([]);
-        for(var x = 0; x < DUNGEON_WIDTH; x++) {
-            map[y].push(dungeon.walls.get([x,y]) ? 1 : 0);
-        }
-    }
-
-    return map;
-}
-
 function get_rand_pos(){
     while(true) {
-        var x = Math.floor(Math.random()*DUNGEON_WIDTH);
-        var y = Math.floor(Math.random()*DUNGEON_HEIGHT);
-        if( !map[y][x] ) {
+        var x = Math.floor(Math.random()*dungeon.width);
+        var y = Math.floor(Math.random()*dungeon.height);
+        if( !dungeon.map[y][x] ) {
             return {x:x, y:y};
         }
     }
@@ -320,3 +209,4 @@ function addCrosHeaders(res) {
 
     return res;
 }
+
