@@ -23,7 +23,7 @@ var dungeon = new Dungeon({
 
 dungeon.generate();
 dungeon.print();
-console.log(dungeon.size);
+console.log("Dungeon size:", dungeon.size);
 
 var width = dungeon.size[0];
 var height = dungeon.size[1];
@@ -35,9 +35,6 @@ for(var y = 0; y < height; y++) {
         map[y].push(dungeon.walls.get([x,y])?1:0)
     }
 }
-
-console.log(map);
-
 
 /*
  * {
@@ -126,9 +123,9 @@ app.post('/command', function(req, res){
             }
             res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
             break;
-
     }
 });
 
-app.listen(8080, function(){});
-/**/
+app.listen(8080, function() {
+    console.log("Listen to port 8080");
+});
