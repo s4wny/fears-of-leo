@@ -101,8 +101,17 @@ console.log("v1");
     }
 
     function drawEntities(entities) {
+        var myX, myY;
         entities.forEach(function(entity) {
-            drawSquare(entity.x, entity.y, stringToColor(entity.name));
+            if(entity.name == PLAYER_NAME) {
+                myX = entity.x;
+                myY = entity.y;
+                return;
+            }
+        });
+
+        entities.forEach(function(entity) {
+            drawSquare(myX - entity.x + 3, myY - entity.y + 3, stringToColor(entity.name));
         });
     }
 
