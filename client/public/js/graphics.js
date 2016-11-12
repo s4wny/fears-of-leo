@@ -62,17 +62,17 @@ console.log("Graphics v1");
                         if(isOccupied[0] || isOccupied[1]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
                                                                                 (i + 0.2) * TILE_SIZE,
                                                                                  0.6 * TILE_SIZE,
-                                                                                 0,
+                                                                                 Math.PI*3/4,
                                                                                  'black');
                         if(isOccupied[1] || isOccupied[2]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
                                                                                 (i + 0.8) * TILE_SIZE,
                                                                                  0.6 * TILE_SIZE,
-                                                                                 0,
+                                                                                 Math.PI/2,
                                                                                  'black');
                         if(isOccupied[2] || isOccupied[3]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
                                                                                 (i + 0.8) * TILE_SIZE,
                                                                                  0.6 * TILE_SIZE,
-                                                                                 0,
+                                                                                 Math.PI/4,
                                                                                  'black');
                         if(isOccupied[3] || isOccupied[0]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
                                                                                 (i + 0.2) * TILE_SIZE,
