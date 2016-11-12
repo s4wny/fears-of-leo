@@ -164,7 +164,7 @@ console.log("Graphics v1");
     	ctx.fill();
     }
 
-    graphics.drawArcQuad(x, y, r, offset, color) {
+    graphics.drawArcQuad = function(x, y, r, offset, color) {
 
       var angle = 0;
 
