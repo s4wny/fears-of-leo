@@ -1,0 +1,12 @@
+body {
+	background: url('img/unicorn-06.jpg');
+	background-size: cover;
+}
+
+.game {
+	border: 1px solid black;
+}
+
+.main-wrapper {
+	background-color: rgba(255, 255, 255, 0.8);
+}
