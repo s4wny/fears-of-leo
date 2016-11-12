@@ -19,7 +19,8 @@ console.log("v1");
     var KEYPRESS_INTERVAL = 100;
 
     var PORT = 8080;
-    var IP = "192.168.204.30"; // Filip
+    //var IP = "192.168.204.30"; // Filip
+    var IP = "192.168.204.29"; // Poffe
     //var IP = "127.0.0.1"; // Local
     var SERVER_URL = "http://"+ IP +":"+ PORT;
 
@@ -89,7 +90,19 @@ console.log("v1");
             row.forEach(function(tile, j) {
                 switch(tile) {
                     case TILE_TYPES.WALL:
-                        drawSquare(j, i, 'black');
+                        var isOccupied = [0,0,0,0];
+                        if(i > 0 && map[i-1][j]) isOccupied[0] = 1;
+                        if(j > 0 && map[i][j-1]) isOccupied[3] = 1;
+                        if(map.length > i+1 && map[i+1][j]) isOccupied[2] = 1;
+                        if(map[i].length > j+1 && map[i][j+1]) isOccupied[1] = 1;
+
+                        var corners = [1,1,1,1];
+                        if(isOccupied[0] || isOccupied[1]) corners[1] = 0;
+                        if(isOccupied[1] || isOccupied[2]) corners[3] = 0;
+                        if(isOccupied[2] || isOccupied[3]) corners[2] = 0;
+                        if(isOccupied[3] || isOccupied[0]) corners[0] = 0;
+
+                        drawRoundSquare(j, i, corners, 'black');
                         break;
                     case TILE_TYPES.FLOOR:
                         break;
@@ -112,17 +125,34 @@ console.log("v1");
         });
 
         entities.forEach(function(entity) {
-            drawRoundRect(entity.x - myX + 3, entity.y - myY + 3, stringToColor(entity.name));
+            var corners = [1,1,1,1];
+            drawRoundSquare(entity.x - myX + 3, entity.y - myY + 3, corners, stringToColor(entity.name));
         });
     }
 
-    function drawRoundRect(x, y, color) {
+    function drawRoundSquare(x, y, corners, color) {
       drawRect((x + 0.2) * TILE_SIZE, y * TILE_SIZE, 0.6 * TILE_SIZE, TILE_SIZE, color);
       drawRect(x * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE, 0.6 * TILE_SIZE, color);
-      drawCircle((x + 0.2) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
-      drawCircle((x + 0.8) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
-      drawCircle((x + 0.2) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
-      drawCircle((x + 0.8) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      if(corners[0]) {
+        drawCircle((x + 0.2) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect(x * TILE_SIZE, y * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[1]) {
+        drawCircle((x + 0.8) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect((x + 0.8) * TILE_SIZE, y * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[2]) {
+        drawCircle((x + 0.2) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect(x * TILE_SIZE, (y + 0.8) * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[3]) {
+        drawCircle((x + 0.8) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect((x + 0.8) * TILE_SIZE, (y + 0.8) * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
     }
 
     function drawSquare(x, y, color) {
