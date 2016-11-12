@@ -96,13 +96,13 @@ app.listen(8080, function() {
 });
 
 /** 
- * 3x3 map around player
+ * 7x7 map around player
  */
 function getSquaresAroundPlayer(player) {
     var m = [];
-    for (var i = -1; i <= 1; i++) {
+    for (var i = -3; i <= 3; i++) {
         m.push([]);
-        for (var j = -1; j <= 1; j++) {
+        for (var j = -3; j <= 3; j++) {
             var other_player = undefined;
             for(var n in players) {
                 p = players[n];
@@ -114,7 +114,11 @@ function getSquaresAroundPlayer(player) {
             if (other_player !== undefined) {
                 m[i+1].push({type:"player", name:other_player});
             } else {
-                m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
+                if(typeof map[i+player.pos.y][j+player.pos.x] === undefined) {
+                    m[i+1].push({type: "wall", name:""});
+                } else {
+                    m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
+                }
             }
         }
     }
