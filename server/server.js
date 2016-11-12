@@ -2,77 +2,30 @@ var express = require('express');
 var bodyparser = require('body-parser');
 var Dungeon = require('dungeon-generator')
 
-var dungeon = new Dungeon({
-    size: [100, 100], 
-    seed:"abcd",
-    rooms: {
-        any: {
-            min_size: [2, 3],
-            max_size: [5, 6],
-            max_exits: 4
-        }
-    },
-    max_corridor_length: 10,
-    min_corridor_length: 2,
-    corridor_density: 0.5, //corridors per room 
-    symmetric_rooms: false, // exits must be in the center of a wall if true 
-    interconnects: 1, //extra corridors to connect rooms and make circular paths. not 100% guaranteed 
-    max_interconnect_length: 10,
-    room_count: Math.floor(Math.random()*10)+4
-});
+var dungeon = genereateDungeon();
+var WIDTH = dungeon.size[0];
+var HEIGHT = dungeon.size[1];
+var map = parseDungeonDataIntoArray();
 
-dungeon.generate();
-dungeon.print();
-console.log("Dungeon size:", dungeon.size);
+console.log(map);
 
-var width = dungeon.size[0];
-var height = dungeon.size[1];
-
-var map = []
-for(var y = 0; y < height; y++) {
-    map.push([]);
-    for(var x = 0; x < width; x++) {
-        map[y].push(dungeon.walls.get([x,y])?1:0)
-    }
-}
-
-/*
+/**
+ * Player structure:
  * {
- * pos:{x:0, y:0},
- * last_time_move:0
+ *      pos:{x:0, y:0},
+ *      last_time_move:0
  * }
  */
-
 var players = {};
-
-function get_rand_pos(){
-    while(true) {
-        var x = Math.floor(Math.random()*width);
-        var y = Math.floor(Math.random()*height);
-        if( !map[y][x] ) {
-            return {x:x, y:y};
-        }
-    }
-}
-
-function get_current_time() { // Returns millisec
-    if (!Date.now) {
-        Date.now = function() { return new Date().getTime(); }
-    }
-    Date.now()
-}
 
 var app = express();
 
 app.use(bodyparser.urlencoded({
-  extended: true
+    extended: true
 }));
 
 app.post('/command', function(req, res){
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    res.setHeader('Access-Control-Allow-Credentials', true); 
+    res = addCrosHeaders(res);
 
     var command = req.body.command;
     var name = req.body.name;
@@ -143,3 +96,73 @@ app.post('/command', function(req, res){
 app.listen(8080, function() {
     console.log("Listen to port 8080");
 });
+
+
+function genereateDungeon() {
+    var dungeon = new Dungeon({
+        size: [100, 100], 
+        seed:"abcd",
+        rooms: {
+            any: {
+                min_size: [2, 3],
+                max_size: [5, 6],
+                max_exits: 4
+            }
+        },
+        max_corridor_length: 10,
+        min_corridor_length: 2,
+        corridor_density: 0.5, //corridors per room 
+        symmetric_rooms: false, // exits must be in the center of a wall if true 
+        interconnects: 1, //extra corridors to connect rooms and make circular paths. not 100% guaranteed 
+        max_interconnect_length: 10,
+        room_count: Math.floor(Math.random()*10)+4
+    });
+
+    dungeon.generate();
+    dungeon.print();
+    console.log("Dungeon size:", dungeon.size);
+
+    return dungeon;
+}
+
+function parseDungeonDataIntoArray() {
+    var map = [];
+
+    for(var y = 0; y < HEIGHT; y++) {
+        map.push([]);
+        for(var x = 0; x < WIDTH; x++) {
+            map[y].push(dungeon.walls.get([x,y]) ? 1 : 0);
+        }
+    }
+
+    console.log("parseDungeonDataIntoArray", map);
+
+    return map;
+}
+
+function get_rand_pos(){
+    console.log("map2", map);
+    while(true) {
+        var x = Math.floor(Math.random()*WIDTH);
+        var y = Math.floor(Math.random()*HEIGHT);
+        if( !map[y][x] ) {
+            return {x:x, y:y};
+        }
+    }
+}
+
+function get_current_time() { // Returns millisec
+    if (!Date.now) {
+        Date.now = function() { return new Date().getTime(); }
+    }
+    Date.now()
+}
+
+function addCrosHeaders(res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    return res;
+}
