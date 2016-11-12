@@ -100,15 +100,18 @@ app.post('/command', function(req, res){
                 return
             }
             if ( (get_current_time() - player.last_time_move) < 2000) {
-                res.end(JSON.stringify({"success": false, "message": "You need to wait a it longer to move again"}));
+                res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
             }
             if ( map[player.pos.x+dx][player.pos.y+dy] == 1 ) {
                 res.end(JSON.stringify({"success": false, "message": "You walked into a wall"}));
                 return
             }
+            
+            player.last_time_move = get_current_time();
             player.pos.x += dx;
             player.pos.y += dy;
+            players[name] = player;
             res.end(JSON.stringify({"success": true, "message": ""}));
             break;
 
