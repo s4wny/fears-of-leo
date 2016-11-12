@@ -53,33 +53,6 @@ console.log("Graphics v1");
                         break;
 
                     case TILE_TYPES.FLOOR:
-                        var isOccupied = [0,0,0,0];
-                        if(i > 0 && !map[i-1][j]) isOccupied[0] = 1;
-                        if(j > 0 && !map[i][j-1]) isOccupied[3] = 1;
-                        if(map.length > i+1 && !map[i+1][j]) isOccupied[2] = 1;
-                        if(map[i].length > j+1 && !map[i][j+1]) isOccupied[1] = 1;
-
-                        if(isOccupied[0] || isOccupied[1]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
-                                                                                (i + 0.2) * TILE_SIZE,
-                                                                                 0.6 * TILE_SIZE,
-                                                                                 Math.PI*3/4,
-                                                                                 'black');
-                        if(isOccupied[1] || isOccupied[2]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
-                                                                                (i + 0.8) * TILE_SIZE,
-                                                                                 0.6 * TILE_SIZE,
-                                                                                 Math.PI/2,
-                                                                                 'black');
-                        if(isOccupied[2] || isOccupied[3]) graphics.drawArcQuad((j + 0.2) * TILE_SIZE,
-                                                                                (i + 0.8) * TILE_SIZE,
-                                                                                 0.6 * TILE_SIZE,
-                                                                                 Math.PI/4,
-                                                                                 'black');
-                        if(isOccupied[3] || isOccupied[0]) graphics.drawArcQuad((j + 0.8) * TILE_SIZE,
-                                                                                (i + 0.2) * TILE_SIZE,
-                                                                                 0.6 * TILE_SIZE,
-                                                                                 0,
-                                                                                 'black');
-
                         break;
 
                     default:
