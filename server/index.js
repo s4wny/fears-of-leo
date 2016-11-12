@@ -123,6 +123,9 @@ app.post('/command', function(req, res){
             }
             res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
             break;
+        default:
+            res.end(JSON.stringify({"success": false, "message": "Command not found"}));
+            return
     }
 });
 
