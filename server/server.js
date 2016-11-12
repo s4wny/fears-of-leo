@@ -79,6 +79,9 @@ app.listen(8080, function() {
     advertice();
     monsters.push(get_rand_pos());
     monsters.push(get_rand_pos());
+    if(is_move_allowed(monsters[0], 0, 0) || is_move_allowed({x:0, y:0}, 0, 0)) {
+        console.log("You function upp")
+    }
     auto_monster()
 });
 
@@ -132,6 +135,7 @@ function move_pos(old_pos, dx, dy) {
     }
     return old_pos;
 }
+
 function move_monster(index, dx, dy) {
     monsters[index] = move_pos(monsters[index], dx, dy);
 }
@@ -188,7 +192,7 @@ function get_rand_pos(){
     while(true) {
         var x = Math.floor(Math.random()*dungeon.width);
         var y = Math.floor(Math.random()*dungeon.height);
-        if( !dungeon.map[y][x] ) {
+        if(is_move_allowed({x:x, y:y}, 0, 0)) {
             return {x:x, y:y};
         }
     }
