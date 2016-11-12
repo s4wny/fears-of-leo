@@ -8,6 +8,7 @@ var dungeon = genereateDungeon();
 var DUNGEON_WIDTH = dungeon.size[0];
 var DUNGEON_HEIGHT = dungeon.size[1];
 var map = parseDungeonDataIntoArray();
+var irc_client = createIRC()
 
 var SPEED_LIMIT = 100;
 
@@ -98,10 +99,6 @@ function advertice(){
             ++alias;
             return false;
         });
-    });
-
-    var irc_clinet =  new irc.Client('irc.leovegas.com', 'Unicorns'+address, {
-        channels: ['#dungeon'],
     });
 
     setInterval(function(){
@@ -210,6 +207,11 @@ function genereateDungeon() {
     return dungeon;
 }
 
+function createIRC(){
+    return new irc.Client('irc.leovegas.com', 'Unicorns', {
+        channels: ['#dungeon'],
+    }); 
+}
 
 function parseDungeonDataIntoArray() {
     var map = [];
