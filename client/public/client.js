@@ -41,6 +41,7 @@ console.log("v1");
         canvas = document.getElementById("js-game");
         ctx = canvas.getContext("2d");
 
+        
         IP = prompt("IP", IP);
         PLAYER_NAME = prompt("Enter a unicorn name:");
 
