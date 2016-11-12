@@ -6,32 +6,58 @@ console.log("v1");
 	var testJson = '{"Area":[[1,1,1], [1,0,1], [1,1,1]]}';
 	var testJson = '{"Area":[[1,1,0,0,0], [1,0,0,0,1], [1,0,1,0,1], [0,0,1,0,0], [0,1,1,1,0], [0,0,0,0,0], [0,1,1,1,1]]}';
 	
-	var canvas, ctx;
-	var tileSize = 50;
+	// GLOBAL VARZ
+	var canvas, ctx, keysPressed;
 
-	var WALL = 1;
+	// CONFIG
+	var TILE_SIZE = 10;
+
+	var TILE_TYPES = {
+		WALL : 1,
+		PLAYER : 4,
+		EMPTY : 0,
+	}
+	
+	var KEYPRESS_INTERVAL = 100;
+
 	var PORT = 8080;
-	var PLAYER = 4;
-	var IP = "192.168.204.30";
+	var IP = "192.168.204.30"; // Filip
+	var IP = "127.0.0.1"; // Local
 
+	var ALLOWED_KEYS = {
+		left : 37,
+		up : 38,
+		right : 39,
+		down : 40,
+	}
+
+	// Don't put code here, put in main.
 	$(document).ready(function() {
-		canvas = document.getElementById("js-game");
-		ctx = canvas.getContext("2d");
-
 		main();
 	});
 
+
+
 	function main() {
+		canvas = document.getElementById("js-game");
+		ctx = canvas.getContext("2d");
+	 	
+		listenForKeypressed();
+		listenForMovement();
+		getMapFromServerAndRender();
+	};
+
+	function getMapFromServerAndRender() {
 		$.getJSON('http://'+ IP +':'+ PORT).done(function(map) {
 			console.log("Map", map);
 		
-			var canvasWidth = map.Area[0].length * tileSize;
-			var canvasHeight = map.Area.length * tileSize;
+			var canvasWidth = map.Area[0].length * TILE_SIZE;
+			var canvasHeight = map.Area.length * TILE_SIZE;
 
 			resizeCanvas(canvasWidth, canvasHeight);
 			drawMap(map);
 		}).fail(function(res) { console.log(res); });
-	};
+	}
 
 	function resizeCanvas(width, height) {
 		canvas.width = width;
@@ -42,11 +68,13 @@ console.log("v1");
 		map.Area.forEach(function(row, i) {
 			row.forEach(function(type, j) {
 				switch(type) {
-					case WALL:
+					case TILE_TYPES.WALL:
 						drawSquare(j, i, 'black');
 						break;
-					case PLAYER:
+					case TILE_TYPES.PLAYER:
 						drawSquare(j, i, 'blue');
+						break;
+					case TILE_TYPES.EMPTY:
 						break;
 					default:
 						console.warn("Undefined type!!", type);
@@ -57,7 +85,7 @@ console.log("v1");
 	}
 
 	function drawSquare(x, y, color) {
-		drawRect(x * tileSize, y * tileSize, tileSize, tileSize, color)
+		drawRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE, color)
 	}
 
 	function drawRect(x, y, w, h, color) {
@@ -65,6 +93,70 @@ console.log("v1");
 		ctx.fillRect(x, y, w, h);
 	}
 
+
+	/**
+	 * Is any of the ALLOWED_KEYS pressed?
+	 */
+	function isAnyAllowedKeyPress() {
+		var anyAllowdKeyIsPressed = false;
+		for(var key in ALLOWED_KEYS) {
+			if(keysPressed[ALLOWED_KEYS[key]] === true) {
+				anyAllowdKeyIsPressed = true;
+			}
+		}
+
+		return anyAllowdKeyIsPressed;
+	}
+
+	function unsetAllKeysPressed() {
+		for (var key in keysPressed) {
+			delete keysPressed[key];
+		}
+	}
+
+	/**
+	 * Set keysPressed[key] to true on KEYDOWN
+	 * Unset on KEYUP
+	 */
+	function listenForKeypressed() {
+	 	keysPressed = {};
+
+		$(document).keydown(function (e) {
+		    keysPressed[e.which] = true;
+		});
+
+		$(document).keyup(function (e) {
+		    delete keysPressed[e.which];
+		});
+	}
+
+
+	function listenForMovement() {
+		setInterval(function() {
+			// Don't send command if no relevant key is pressed
+			if(!isAnyAllowedKeyPress()) {
+				return;
+			}
+
+			var command = {command : "move", name: "swag", dx: 1, dy: 1};
+			var dx = 0;
+			var dy = 0;
+
+			dy += (keysPressed[ALLOWED_KEYS.up])    ? 1 : 0;
+			dy += (keysPressed[ALLOWED_KEYS.down])  ? -1 : 0;
+			dx += (keysPressed[ALLOWED_KEYS.right]) ? 1 : 0;
+			dx += (keysPressed[ALLOWED_KEYS.left])  ? -1 : 0;
+
+			unsetAllKeysPressed();
+
+			command.dx = dx;
+			command.dy = dy;
+
+			JSON.stringify(command);
+			console.log(command);
+
+		}, KEYPRESS_INTERVAL);
+	}
 })(window);
 
 
