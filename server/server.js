@@ -28,8 +28,9 @@ app.use(bodyparser.urlencoded({
 app.get('/command', function(req, res){
     res = addCrosHeaders(res);
 
-    var command = req.body.command;
-    var name = req.body.name;
+    var command = req.query.command;
+    var name = req.query.name;
+    console.log(req.query)
 
     switch(command) {
         case 'create':
@@ -42,8 +43,8 @@ app.get('/command', function(req, res){
             break;
 
         case 'move':
-            var dx = parseInt(req.body.dx);
-            var dy = parseInt(req.body.dy);
+            var dx = parseInt(req.query.dx);
+            var dy = parseInt(req.query.dy);
             
             res.end(JSON.stringify(move_player(name, dx, dy)));
             break;
@@ -56,9 +57,9 @@ app.get('/command', function(req, res){
 
             player = players[name];
 
-            Area = getSquaresAroundPlayer(player);
+            var scan = getSquaresAroundPlayer(player);
             players[name].last_time_scan = get_current_time();
-            res.end(JSON.stringify({"success": true, "data": Area, "message": ""}));
+            res.end(JSON.stringify(scan));
             break;
 
         default:
@@ -133,12 +134,13 @@ function getSquaresAroundPlayer(player) {
             }
         }
     }
-    var entities = []
+    
     // Other player around you
+    var entities = []
     for(var name in players) {
         other_player = players[name];
         if(Math.abs(other_player.pos.x - player.pos.x) <= 3 && Math.abs(other_player.pos.y - player.pos.y) <= 3) {
-            entities.push({"name":players[name], "x":other_player.pos.x, "y":other_player.pos.y});
+            entities.push({"name":name, "x":other_player.pos.x, "y":other_player.pos.y});
         }
     }
 
