@@ -91,7 +91,10 @@ app.listen(8080, function() {
 
 function auto_monster(){
     setInterval(function(){
-        for(var i = 0; i < monsters.lenght; i++) {
+
+            console.log("Done")
+        for(var i = 0; i < monsters.length; i++) {
+            console.log("Done")
             move_monster(i, Math.floor(Math.random()*3)-1, Math.floor(Math.random()*3)-1);
         }
     }, 1000);
@@ -137,6 +140,7 @@ function remove_inactive_players(){
 }
 
 function move_monster(index, dx, dy) {
+    console.log(index, dx, dy);
     if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
         return {"success": false, "message": "Move not allowed"};
     }
