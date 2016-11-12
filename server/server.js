@@ -30,7 +30,6 @@ app.get('/command', function(req, res){
 
     var command = req.query.command;
     var name = req.query.name;
-    console.log(req.query)
 
     switch(command) {
         case 'create':
