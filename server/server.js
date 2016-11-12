@@ -44,33 +44,7 @@ app.post('/command', function(req, res){
             var dx = parseInt(req.body.dx);
             var dy = parseInt(req.body.dy);
             
-            if ( !(name in players) ) {
-                res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
-                return
-            }
-
-            player = players[name];
-            
-            if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
-                res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
-                return
-            }
-            
-            if ( (get_current_time() - player.last_time_move) < SPEED_LIMIT) {
-                res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
-                return
-            }
-
-            if ( map[ parseInt(player.pos.y) + dy][parseInt(player.pos.x) + dx] == 1 ) {
-                res.end(JSON.stringify({"success": false, "message": "You walked into a wall"}));
-                return
-            }
-            
-            player.last_time_move = get_current_time();
-            player.pos.x += dx;
-            player.pos.y += dy;
-            players[name] = player;
-            res.end(JSON.stringify({"success": true, "message": ""}));
+            res.end(JSON.stringify(move_player(name, dx, dy)));
             break;
 
         case 'scan':
@@ -95,6 +69,39 @@ app.listen(8080, function() {
     console.log("Listen to port 8080");
 });
 
+function move_player(name, dx, dy) {
+    if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
+        return {"success": false, "message": "Move not allowed"};
+    }
+
+    if ( !(name in players) ) {
+        return {"success": false, "message": "User does not exist"};
+    }
+
+    player = players[name];
+    
+    if ( (get_current_time() - player.last_time_move) < SPEED_LIMIT) {
+        return {"success": false, "message": "You need to wait a bit longer to move again"};
+    }
+
+    if ( map[ parseInt(player.pos.y) + dy][parseInt(player.pos.x) + dx] == 1 ) {
+        return {"success": false, "message": "You walked into a wall"};
+    }
+    
+    for (var p_name in players) {
+        other_player = players[p_name];
+        if(other_player.pos.x == player.pos.x + dx && other_player.pos.y == player.pos.y + dy) {
+            return {"success": false, "message": "You walked into another player"};
+        }
+    }
+
+    player.last_time_move = get_current_time();
+    player.pos.x += dx;
+    player.pos.y += dy;
+    players[name] = player;
+
+    return {"success": true, "message": ""};
+}
 /** 
  * 7x7 map around player
  */
