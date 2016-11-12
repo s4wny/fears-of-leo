@@ -102,7 +102,7 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
                 return
             }
-            if ( (get_current_time() - player.last_time_move) < 2000) {
+            if ( (get_current_time() - player.last_time_move) < 500) {
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
             }
