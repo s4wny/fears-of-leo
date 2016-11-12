@@ -79,7 +79,7 @@ console.log("v1");
                         drawSquare(j, i, 'black');
                         break;
                     case TILE_TYPES.PLAYER:
-                        drawSquare(j, i, "red");
+                        drawSquare(j, i, stringToColor(tile.name));
                         break;
                     case TILE_TYPES.FLOOR:
                         break;
@@ -113,14 +113,16 @@ console.log("v1");
     function stringToColor(input) {
         var hash = 0;
 
-        if (input.length == 0) return hash;
-        for (i = 0; i < input.length; i++) {
-            char = input.charCodeAt(i);
+        if (input.length == 0)
+            return hash;
+
+        for (var i = 0; i < input.length; i++) {
+            var char = input.charCodeAt(i);
             hash = ((hash<<5)-hash)+char;
             hash = hash & hash; // Convert to 32bit integer
         }
         if(hash < 0) {
-                hash *= -1;
+            hash *= -1;
         }
 
         return intToColor(hash);
