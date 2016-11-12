@@ -22,6 +22,16 @@ var SPEED_LIMIT = 100;
  */
 var players = {};
 
+
+/**
+ * Monster structure:
+ * {
+ *      pos:{x:0, y:0},
+ * }
+ */
+
+var monsters = [];
+
 var app = express();
 
 app.use(bodyparser.urlencoded({
@@ -74,8 +84,18 @@ app.listen(8080, function() {
     console.log("Listen to port 8080");
     remove_inactive_players();
     advertice();
+    monsters.push(get_rand_pos());
+    monsters.push(get_rand_pos());
+    auto_monster()
 });
 
+function auto_monster(){
+    setInterval(function(){
+        for(var i = 0; i < monsters.lenght; i++) {
+            move_monster(i, Math.floor(Math.random()*3)-1, Math.floor(Math.random()*3)-1);
+        }
+    }, 1000);
+}
 function advertice(){
     var ifaces = os.networkInterfaces();
     var address = "";
@@ -116,6 +136,41 @@ function remove_inactive_players(){
     }, SPEED_LIMIT);
 }
 
+function move_monster(index, dx, dy) {
+    if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
+        return {"success": false, "message": "Move not allowed"};
+    }
+
+    entity = monsters[index];
+
+    if ( map[ parseInt(entity.y) + dy][parseInt(entity.x) + dx] == 1 ) {
+        return {"success": false, "message": "You walked into a wall"};
+    }
+    
+    for (var i = 0; i < monsters.length; i++) {
+        if (i == index) {
+            continue;
+        }
+
+        if(monsters[i].x === entity.x + dx && monsters[i].y === entity.y + dy){
+            return {"success": false, "message": "You walked into another player"};
+        }
+    }
+    
+    for (var p_name in players) {
+        other_player = players[p_name];
+        if(other_player.pos.x == entity.x + dx && other_player.pos.y == entity.y + dy) {
+            return {"success": false, "message": "You walked into another player"};
+        }
+    }
+
+    entity.x += dx;
+    entity.y += dy;
+    monsters[index] = entity;
+
+    return {"success": true, "message": ""};
+}
+
 function move_player(name, dx, dy) {
     if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
         return {"success": false, "message": "Move not allowed"};
@@ -138,6 +193,12 @@ function move_player(name, dx, dy) {
     for (var p_name in players) {
         other_player = players[p_name];
         if(other_player.pos.x == player.pos.x + dx && other_player.pos.y == player.pos.y + dy) {
+            return {"success": false, "message": "You walked into another player"};
+        }
+    }
+
+    for (var i = 0; i < monsters.length; i++) {
+        if(monsters[i].x === player.pos.x + dx && monsters[i].y === player.pos.y + dy){
             return {"success": false, "message": "You walked into another player"};
         }
     }
@@ -175,6 +236,10 @@ function getSquaresAroundPlayer(player) {
         if(Math.abs(other_player.pos.x - player.pos.x) <= 3 && Math.abs(other_player.pos.y - player.pos.y) <= 3) {
             entities.push({"name":name, "x":other_player.pos.x, "y":other_player.pos.y});
         }
+    }
+
+    for(var i = 0; i < monsters.length; i++){
+        entities.push({"name":"monsterssss", "x":monsters[i].x, "y":monsters[i].y});
     }
 
     return {Area:Area, entities:entities};
