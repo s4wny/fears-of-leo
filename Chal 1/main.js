@@ -3,9 +3,6 @@
 console.log("v1");
 
 (function(window) {
-	var testJson = '{"Area":[[1,1,1], [1,0,1], [1,1,1]]}';
-	var testJson = '{"Area":[[1,1,0,0,0], [1,0,0,0,1], [1,0,1,0,1], [0,0,1,0,0], [0,1,1,1,0], [0,0,0,0,0], [0,1,1,1,1]]}';
-	
 	// GLOBAL VARZ
 	var canvas, ctx, keysPressed;
 
@@ -25,6 +22,8 @@ console.log("v1");
 	var IP = "127.0.0.1"; // Local
 	var SERVER_URL = "http://"+ IP +":"+ PORT;
 
+	var PLAYER_NAME = "SuperUnicorn";
+
 	var ALLOWED_KEYS = {
 		left : 37,
 		up : 38,
@@ -43,14 +42,15 @@ console.log("v1");
 		canvas = document.getElementById("js-game");
 		ctx = canvas.getContext("2d");
 
-	 	createPlayer("SuperUnicorn");
+	 	createPlayer(PLAYER_NAME);
+		getMapFromServerAndRender();
+
 		listenForKeypressed();
 		listenForMovement();
-		getMapFromServerAndRender();
 	};
 
 	function getMapFromServerAndRender() {
-		$.getJSON(SERVER_URL).done(function(map) {
+		$.post(SERVER_URL + '/command', {command: 'scan', name: PLAYER_NAME}).done(function(map) {
 			console.log("Map", map);
 		
 			var canvasWidth = map.Area[0].length * TILE_SIZE;
@@ -163,7 +163,7 @@ console.log("v1");
 
 			unsetAllKeysPressed();
 
-			$.post(SERVER_URL, command)
+			$.post(SERVER_URL +'/command', command)
 			.done(function(res) {
 				console.log(res);
 			})
@@ -177,7 +177,7 @@ console.log("v1");
 	function createPlayer(username) {
 		var command = {command: 'create', name: username};
 
-		$.post(SERVER_URL, command)
+		$.post(SERVER_URL +'/command', command)
 		.done(function(res) {
 			console.log(res);
 		})
