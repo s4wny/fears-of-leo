@@ -42,7 +42,8 @@ console.log("v1");
 	function main() {
 		canvas = document.getElementById("js-game");
 		ctx = canvas.getContext("2d");
-	 	
+
+	 	createPlayer("SuperUnicorn");
 		listenForKeypressed();
 		listenForMovement();
 		getMapFromServerAndRender();
@@ -162,17 +163,27 @@ console.log("v1");
 
 			unsetAllKeysPressed();
 
-			command = JSON.stringify(command);
-
 			$.post(SERVER_URL, command)
 			.done(function(res) {
 				console.log(res);
 			})
-			.error(function(res) {
+			.fail(function(res) {
 				console.error(res);
 			});
 
 		}, KEYPRESS_INTERVAL);
+	}
+
+	function createPlayer(username) {
+		var command = {command: 'create', name: username};
+
+		$.post(SERVER_URL, command)
+		.done(function(res) {
+			console.log(res);
+		})
+		.fail(function(res) {
+			console.error(res);
+		});
 	}
 })(window);
 
