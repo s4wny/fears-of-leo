@@ -55,6 +55,7 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
                 return
             }
+            
             if ( (get_current_time() - player.last_time_move) < 500) {
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
@@ -77,15 +78,11 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
                 return
             }
+
             player = players[name];
-            var m = [];
-            for (var i = -1; i <= 1; i++) {
-                m.push([]);
-                for (var j = -1; j <= 1; j++) {
-                    m[i+1].push(map[i+player.pos.y][j+player.pos.x]?1:0);
-                }
-            }
-            res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
+            mapAroundPlayer = getSquaresAroundPlayer(player);
+
+            res.end(JSON.stringify({"success": true, "data": mapAroundPlayer, "message": ""}));
             break;
         default:
             res.end(JSON.stringify({"success": false, "message": "Command not found"}));
@@ -97,6 +94,20 @@ app.listen(8080, function() {
     console.log("Listen to port 8080");
 });
 
+/** 
+ * 3x3 map around player
+ */
+function getSquaresAroundPlayer(player) {
+    var mapAroundPlayer = [];
+    for (var i = -1; i <= 1; i++) {
+        mapAroundPlayer.push([]);
+        for (var j = -1; j <= 1; j++) {
+            mapAroundPlayer[i+1].push(map[i+player.pos.y][j+player.pos.x] ? 1 : 0);
+        }
+    }
+
+    return mapAroundPlayer;
+}
 
 function genereateDungeon() {
     var dungeon = new Dungeon({
