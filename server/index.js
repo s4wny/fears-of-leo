@@ -93,15 +93,18 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
                 return
             }
+            player = players[name];
             if ( !([-1, 0, 1].indexOf(dx) || [-1,0,1].indexOf(dy)) ) {
                 res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
                 return
             }
             if ( (get_current_time() - player.last_time_move) < 2000) {
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a it longer to move again"}));
+                return
             }
             if ( map[player.pos.x+dx][player.pos.y+dy] == 1 ) {
                 res.end(JSON.stringify({"success": false, "message": "You walked into a wall"}));
+                return
             }
             player.pos.x += dx;
             player.pos.y += dy;
@@ -109,6 +112,19 @@ app.post('/command', function(req, res){
             break;
 
         case 'scan':
+            if ( !(name in players) ) {
+                res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
+                return
+            }
+            player = players[name];
+            var m = [];
+            for (var i = -1; i <= 1; i++) {
+                m.push([]);
+                for (var j = -1; j <= 1; j++) {
+                    m[i+1].push(map[i+player.pos.y][j+player.pos.x]?1:0);
+                }
+            }
+            res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
             break;
 
     }
