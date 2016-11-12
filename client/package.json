@@ -1,0 +1,25 @@
+{
+  "name": "client",
+  "version": "1.0.0",
+  "description": "super swag",
+  "main": "webserver.js",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "htmlencode": "^0.0.4",
+    "irc": "^0.5.0",
+    "irc-client": "^0.0.2",
+    "moment": "^2.16.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "null"
+  },
+  "keywords": [
+    "swag",
+    "yolo",
+    "fish"
+  ],
+  "author": "we",
+  "license": "ISC"
+}
