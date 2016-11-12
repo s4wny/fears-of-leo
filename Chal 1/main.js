@@ -23,6 +23,7 @@ console.log("v1");
 	var PORT = 8080;
 	var IP = "192.168.204.30"; // Filip
 	var IP = "127.0.0.1"; // Local
+	var SERVER_URL = "http://"+ IP +":"+ PORT;
 
 	var ALLOWED_KEYS = {
 		left : 37,
@@ -48,7 +49,7 @@ console.log("v1");
 	};
 
 	function getMapFromServerAndRender() {
-		$.getJSON('http://'+ IP +':'+ PORT).done(function(map) {
+		$.getJSON(SERVER_URL).done(function(map) {
 			console.log("Map", map);
 		
 			var canvasWidth = map.Area[0].length * TILE_SIZE;
@@ -146,14 +147,20 @@ console.log("v1");
 			dy += (keysPressed[ALLOWED_KEYS.down])  ? -1 : 0;
 			dx += (keysPressed[ALLOWED_KEYS.right]) ? 1 : 0;
 			dx += (keysPressed[ALLOWED_KEYS.left])  ? -1 : 0;
-
-			unsetAllKeysPressed();
-
 			command.dx = dx;
 			command.dy = dy;
 
-			JSON.stringify(command);
-			console.log(command);
+			unsetAllKeysPressed();
+
+			command = JSON.stringify(command);
+
+			$.post(SERVER_URL, command)
+			.done(function(res) {
+				console.log(res);
+			})
+			.error(function(res) {
+				console.error(res);
+			});
 
 		}, KEYPRESS_INTERVAL);
 	}
