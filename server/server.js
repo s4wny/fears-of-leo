@@ -14,6 +14,7 @@ var SPEED_LIMIT = 100;
  * {
  *      pos:{x:0, y:0},
  *      last_time_move:0
+ *      last_time_scan:0
  * }
  */
 var players = {};
@@ -36,7 +37,7 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "Username already in use"}));
                 return
             }
-            players[name] = {pos:get_rand_pos(), last_time_move: get_current_time()}
+            players[name] = {pos:get_rand_pos(), last_time_move: get_current_time(), last_time_scan: get_current_time()}
             res.end(JSON.stringify({"success": true, "message": ""}));
             break;
 
@@ -56,6 +57,7 @@ app.post('/command', function(req, res){
             player = players[name];
 
             mapAroundPlayer = getSquaresAroundPlayer(player);
+            players[name].last_time_scan = get_current_time();
             res.end(JSON.stringify({"success": true, "data": mapAroundPlayer, "message": ""}));
             break;
 
@@ -67,7 +69,18 @@ app.post('/command', function(req, res){
 
 app.listen(8080, function() {
     console.log("Listen to port 8080");
+    remove_inactive_players();
 });
+
+function remove_inactive_players(){
+    setIntervall(function(){
+        for(var name in players) {
+            if ((get_current_time() - players[name].last_time_scan) > 10000) {
+                delete players[name];
+            }
+        }
+    },SPEED_LIMIT);
+}
 
 function move_player(name, dx, dy) {
     if ( ([-1, 0, 1].indexOf(dx) === -1 || [-1,0,1].indexOf(dy) === -1) ) {
