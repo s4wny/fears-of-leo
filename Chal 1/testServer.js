@@ -3,7 +3,7 @@ const PORT=8080;
 
 //Create a server
 var server = http.createServer(function(req, res) {
-	var a = {"Area":[[1,1,0,0,0], [1,0,0,0,1], [1,0,1,0,1], [0,0,1,0,0], [0,1,1,1,0], [0,0,0,0,0], [1,1,1,1,1]]};
+	var a = {"Area":[[1,1,4,0,0], [1,0,0,0,1], [1,0,1,0,1], [0,0,1,0,0], [0,1,1,1,0], [0,0,0,0,0], [1,1,1,1,1]]};
 
 	// CROS
 	res.setHeader('Access-Control-Allow-Origin', '*');
