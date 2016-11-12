@@ -82,11 +82,24 @@ app.post('/command', function(req, res){
             for (var i = -1; i <= 1; i++) {
                 m.push([]);
                 for (var j = -1; j <= 1; j++) {
-                    m[i+1].push(map[i+player.pos.y][j+player.pos.x]?1:0);
+                    var other_player = undefined;
+                    for(var n in players) {
+                        p = players[n];
+                        if(p.pos.x === player.pos.x+j && p.pos.y === player.pos.y + i) {
+                            other_player = name;
+                            break;
+                        }
+                    }
+                    if (other_player !== undefined) {
+                        m[i+1].push({type:"player", name:other_player});
+                    } else {
+                        m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
+                    }
                 }
             }
             res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
             break;
+
         default:
             res.end(JSON.stringify({"success": false, "message": "Command not found"}));
             return
