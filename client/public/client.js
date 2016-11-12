@@ -113,7 +113,19 @@ console.log("v1");
             row.forEach(function(tile, j) {
                 switch(tile) {
                     case TILE_TYPES.WALL:
-                        drawSquare(j, i, 'black');
+                        var isOccupied = [0,0,0,0];
+                        if(i > 0 && map[i-1][j]) isOccupied[0] = 1;
+                        if(j > 0 && map[i][j-1]) isOccupied[3] = 1;
+                        if(map.length > i+1 && map[i+1][j]) isOccupied[2] = 1;
+                        if(map[i].length > j+1 && map[i][j+1]) isOccupied[1] = 1;
+
+                        var corners = [1,1,1,1];
+                        if(isOccupied[0] || isOccupied[1]) corners[1] = 0;
+                        if(isOccupied[1] || isOccupied[2]) corners[3] = 0;
+                        if(isOccupied[2] || isOccupied[3]) corners[2] = 0;
+                        if(isOccupied[3] || isOccupied[0]) corners[0] = 0;
+
+                        drawRoundSquare(j, i, corners, 'black');
                         break;
                     case TILE_TYPES.FLOOR:
                         break;
@@ -136,8 +148,34 @@ console.log("v1");
         });
 
         entities.forEach(function(entity) {
-            drawSquare(entity.x - myX + 3, entity.y - myY + 3, stringToColor(entity.name));
+            var corners = [1,1,1,1];
+            drawRoundSquare(entity.x - myX + 3, entity.y - myY + 3, corners, stringToColor(entity.name));
         });
+    }
+
+    function drawRoundSquare(x, y, corners, color) {
+      drawRect((x + 0.2) * TILE_SIZE, y * TILE_SIZE, 0.6 * TILE_SIZE, TILE_SIZE, color);
+      drawRect(x * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE, 0.6 * TILE_SIZE, color);
+      if(corners[0]) {
+        drawCircle((x + 0.2) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect(x * TILE_SIZE, y * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[1]) {
+        drawCircle((x + 0.8) * TILE_SIZE, (y + 0.2) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect((x + 0.8) * TILE_SIZE, y * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[2]) {
+        drawCircle((x + 0.2) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect(x * TILE_SIZE, (y + 0.8) * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
+      if(corners[3]) {
+        drawCircle((x + 0.8) * TILE_SIZE, (y + 0.8) * TILE_SIZE, TILE_SIZE * 0.2, color);
+      } else {
+        drawRect((x + 0.8) * TILE_SIZE, (y + 0.8) * TILE_SIZE, 0.2 * TILE_SIZE, 0.2 * TILE_SIZE, color);
+      }
     }
 
     function drawSquare(x, y, color) {
@@ -146,7 +184,31 @@ console.log("v1");
 
     function drawRect(x, y, w, h, color) {
         ctx.fillStyle = color;
-        ctx.fillRect(x, y, w, h);
+
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+w,y);
+        ctx.lineTo(x+w,y+h);
+        ctx.lineTo(x,y+h);
+        ctx.closePath();
+
+        ctx.fill();
+    }
+
+    function drawCircle(x, y, r, color) {
+
+    	var angle = 0;
+
+    	ctx.fillStyle = color;
+    	ctx.beginPath();
+    	ctx.moveTo(r * Math.cos(angle) + x, r * Math.sin(angle) + y);
+    	while(angle < 2 * Math.PI){
+    		angle += 2 * Math.PI / 16;
+    		ctx.lineTo(r * Math.cos(angle) + x, r * Math.sin(angle) + y);
+    	}
+    	ctx.closePath();
+
+    	ctx.fill();
     }
 
     function intToColor(input){
