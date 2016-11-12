@@ -149,7 +149,6 @@ console.log("Graphics v1");
     }
 
     graphics.drawCircle = function(x, y, r, color) {
-
     	var angle = 0;
 
     	ctx.fillStyle = color;
