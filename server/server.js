@@ -55,6 +55,7 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "Move not allowed"}));
                 return
             }
+            
             if ( (get_current_time() - player.last_time_move) < 500) {
                 res.end(JSON.stringify({"success": false, "message": "You need to wait a bit longer to move again"}));
                 return
@@ -77,27 +78,11 @@ app.post('/command', function(req, res){
                 res.end(JSON.stringify({"success": false, "message": "User does not exist"}));
                 return
             }
+
             player = players[name];
-            var m = [];
-            for (var i = -1; i <= 1; i++) {
-                m.push([]);
-                for (var j = -1; j <= 1; j++) {
-                    var other_player = undefined;
-                    for(var n in players) {
-                        p = players[n];
-                        if(p.pos.x === player.pos.x+j && p.pos.y === player.pos.y + i) {
-                            other_player = name;
-                            break;
-                        }
-                    }
-                    if (other_player !== undefined) {
-                        m[i+1].push({type:"player", name:other_player});
-                    } else {
-                        m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
-                    }
-                }
-            }
-            res.end(JSON.stringify({"success": true, "data":m, "message": ""}));
+
+            mapAroundPlayer = getSquaresAroundPlayer(player);
+            res.end(JSON.stringify({"success": true, "data": mapAroundPlayer, "message": ""}));
             break;
 
         default:
@@ -110,6 +95,31 @@ app.listen(8080, function() {
     console.log("Listen to port 8080");
 });
 
+/** 
+ * 3x3 map around player
+ */
+function getSquaresAroundPlayer(player) {
+    var m = [];
+    for (var i = -1; i <= 1; i++) {
+        m.push([]);
+        for (var j = -1; j <= 1; j++) {
+            var other_player = undefined;
+            for(var n in players) {
+                p = players[n];
+                if(p.pos.x === player.pos.x+j && p.pos.y === player.pos.y + i) {
+                    other_player = name;
+                    break;
+                }
+            }
+            if (other_player !== undefined) {
+                m[i+1].push({type:"player", name:other_player});
+            } else {
+                m[i+1].push({type: map[i+player.pos.y][j+player.pos.x]?"wall":"floor", name:""});
+            }
+        }
+    }
+    return m;
+}
 
 function genereateDungeon() {
     var dungeon = new Dungeon({
