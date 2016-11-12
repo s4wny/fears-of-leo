@@ -8,6 +8,7 @@ console.log("v1");
 
     // CONFIG
     var TILE_SIZE = 50;
+    var POLL_RATE = 100;
 
     var TILE_TYPES = {
         WALL : 'wall',
@@ -19,7 +20,7 @@ console.log("v1");
 
     var PORT = 8080;
     var IP = "192.168.204.30"; // Filip
-    var IP = "127.0.0.1"; // Local
+    //var IP = "127.0.0.1"; // Local
     var SERVER_URL = "http://"+ IP +":"+ PORT;
 
     var PLAYER_NAME;
@@ -40,6 +41,7 @@ console.log("v1");
         canvas = document.getElementById("js-game");
         ctx = canvas.getContext("2d");
 
+        IP = prompt("IP", IP);
         PLAYER_NAME = prompt("Enter a unicorn name:");
 
         createPlayer(PLAYER_NAME);
@@ -47,7 +49,14 @@ console.log("v1");
 
         listenForKeypressed();
         listenForMovement();
+        automaticallyUpdateMap();
     };
+
+    function automaticallyUpdateMap() {
+        setInterval(function() {
+            getMapFromServerAndRender();
+        }, POLL_RATE);
+    }
 
     function getMapFromServerAndRender() {
         $.post({
